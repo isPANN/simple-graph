@@ -249,6 +249,17 @@ impl SimpleGraph {
     }
 }
 
+impl SimpleGraph {
+    pub(crate) fn from_csr(offsets: &[usize], targets: &[u32], ne: usize) -> Self {
+        let n = if offsets.is_empty() { 0 } else { offsets.len() - 1 };
+        let mut fadjlist = Vec::with_capacity(n);
+        for v in 0..n {
+            fadjlist.push(targets[offsets[v]..offsets[v + 1]].to_vec());
+        }
+        Self { ne, fadjlist }
+    }
+}
+
 impl Graph for SimpleGraph {
     #[inline]
     fn nv(&self) -> usize { SimpleGraph::nv(self) }
