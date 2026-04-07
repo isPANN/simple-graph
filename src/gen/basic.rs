@@ -1,3 +1,4 @@
+use crate::simple_graph::Neighbors;
 use crate::{CsrGraph, SimpleGraph};
 
 /// Complete graph K_n.
@@ -15,9 +16,9 @@ pub fn complete(n: usize) -> SimpleGraph {
     // Direct adjacency list construction: vertex v's neighbors are [0..v, v+1..n].
     // Two branchless extends instead of a per-element branch.
     let ne = n * n.saturating_sub(1) / 2;
-    let mut fadjlist = Vec::with_capacity(n);
+    let mut fadjlist: Vec<Neighbors> = Vec::with_capacity(n);
     for v in 0..n as u32 {
-        let mut nbrs = Vec::with_capacity(n - 1);
+        let mut nbrs = Neighbors::with_capacity(n - 1);
         nbrs.extend(0..v);
         nbrs.extend(v + 1..n as u32);
         fadjlist.push(nbrs);
@@ -87,15 +88,11 @@ pub fn grid_2d(rows: usize, cols: usize) -> SimpleGraph {
     // Build adjacency lists directly — avoids intermediate edge Vec and extra passes.
     let ne = rows * (cols - 1) + (rows - 1) * cols;
     let cols_u32 = cols as u32;
-    let mut fadjlist = Vec::with_capacity(n);
+    let mut fadjlist: Vec<Neighbors> = Vec::with_capacity(n);
     for r in 0..rows {
         for c in 0..cols {
             let v = (r * cols + c) as u32;
-            let deg = (if r > 0 { 1 } else { 0 })
-                + (if c > 0 { 1 } else { 0 })
-                + (if c + 1 < cols { 1 } else { 0 })
-                + (if r + 1 < rows { 1 } else { 0 });
-            let mut nbrs = Vec::with_capacity(deg);
+            let mut nbrs = Neighbors::new();
             // Push in sorted order: up < left < right < down
             if r > 0 {
                 nbrs.push(v - cols_u32);

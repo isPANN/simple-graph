@@ -1,19 +1,32 @@
+use smallvec::SmallVec;
+
 use crate::Graph;
+
+/// Inline capacity for each vertex's neighbor list. Vertices with degree ≤ 8
+/// store their neighbors inline (no heap allocation), which eliminates the
+/// per-vertex malloc cost that dominates construction of sparse graphs.
+const INLINE_NEIGHBORS: usize = 8;
+
+/// Per-vertex neighbor storage. Inline for degree ≤ [`INLINE_NEIGHBORS`],
+/// spills to heap otherwise.
+pub(crate) type Neighbors = SmallVec<[u32; INLINE_NEIGHBORS]>;
 
 /// An undirected simple graph with sorted adjacency lists.
 ///
 /// Vertices are contiguous integers `0..nv()`. Each vertex stores a sorted
-/// `Vec<u32>` of its neighbors. This mirrors Julia's `Graphs.jl` `SimpleGraph`.
+/// list of its neighbors. For sparse graphs (degree ≤ 8), neighbor storage is
+/// inline — no per-vertex heap allocation. This mirrors Julia's `Graphs.jl`
+/// `SimpleGraph`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct SimpleGraph {
     ne: usize,
-    fadjlist: Vec<Vec<u32>>,
+    fadjlist: Vec<Neighbors>,
 }
 
 #[cfg(feature = "serde")]
 mod serde_impl {
-    use super::SimpleGraph;
+    use super::{Neighbors, SimpleGraph};
     use serde::de::{self, Deserializer};
     use serde::Deserialize;
 
@@ -55,7 +68,7 @@ mod serde_impl {
             }
             Ok(SimpleGraph {
                 ne: raw.ne,
-                fadjlist: raw.fadjlist,
+                fadjlist: raw.fadjlist.into_iter().map(Neighbors::from_vec).collect(),
             })
         }
     }
@@ -80,7 +93,7 @@ impl SimpleGraph {
         assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
         Self {
             ne: 0,
-            fadjlist: vec![vec![]; n],
+            fadjlist: vec![Neighbors::new(); n],
         }
     }
 
@@ -111,7 +124,8 @@ impl SimpleGraph {
             deg[u as usize] += 1;
             deg[v as usize] += 1;
         }
-        let mut fadjlist: Vec<Vec<u32>> = deg.iter().map(|&d| Vec::with_capacity(d)).collect();
+        let mut fadjlist: Vec<Neighbors> =
+            deg.iter().map(|&d| Neighbors::with_capacity(d)).collect();
         for &(u, v) in edges {
             fadjlist[u as usize].push(v);
             fadjlist[v as usize].push(u);
@@ -302,7 +316,7 @@ impl SimpleGraph {
             "vertex count would exceed u32::MAX"
         );
         let v = self.fadjlist.len() as u32;
-        self.fadjlist.push(vec![]);
+        self.fadjlist.push(Neighbors::new());
         v
     }
 
@@ -376,10 +390,10 @@ impl SimpleGraph {
                 new_idx += 1;
             }
         }
-        let mut fadjlist = Vec::with_capacity(new_idx as usize);
+        let mut fadjlist: Vec<Neighbors> = Vec::with_capacity(new_idx as usize);
         let mut ne = 0usize;
         for &old_v in &vmap {
-            let new_nbrs: Vec<u32> = self.fadjlist[old_v as usize]
+            let new_nbrs: Neighbors = self.fadjlist[old_v as usize]
                 .iter()
                 .filter_map(|&nbr| {
                     let new = old_to_new[nbr as usize];
@@ -406,7 +420,7 @@ impl SimpleGraph {
 impl SimpleGraph {
     /// Internal constructor from pre-built sorted adjacency lists.
     /// Caller must guarantee: lists are sorted, symmetric, no self-loops, ne is correct.
-    pub(crate) fn from_raw(ne: usize, fadjlist: Vec<Vec<u32>>) -> Self {
+    pub(crate) fn from_raw(ne: usize, fadjlist: Vec<Neighbors>) -> Self {
         Self { ne, fadjlist }
     }
 
@@ -418,7 +432,8 @@ impl SimpleGraph {
             deg[u as usize] += 1;
             deg[v as usize] += 1;
         }
-        let mut fadjlist: Vec<Vec<u32>> = deg.iter().map(|&d| Vec::with_capacity(d)).collect();
+        let mut fadjlist: Vec<Neighbors> =
+            deg.iter().map(|&d| Neighbors::with_capacity(d)).collect();
         for &(u, v) in edges {
             fadjlist[u as usize].push(v);
             fadjlist[v as usize].push(u);
@@ -437,7 +452,7 @@ impl SimpleGraph {
         };
         let mut fadjlist = Vec::with_capacity(n);
         for v in 0..n {
-            fadjlist.push(targets[offsets[v]..offsets[v + 1]].to_vec());
+            fadjlist.push(Neighbors::from_slice(&targets[offsets[v]..offsets[v + 1]]));
         }
         Self { ne, fadjlist }
     }
@@ -473,7 +488,8 @@ impl SimpleGraph {
             deg[u as usize] += 1;
             deg[v as usize] += 1;
         }
-        let mut fadjlist: Vec<Vec<u32>> = deg.iter().map(|&d| Vec::with_capacity(d)).collect();
+        let mut fadjlist: Vec<Neighbors> =
+            deg.iter().map(|&d| Neighbors::with_capacity(d)).collect();
         for &(u, v) in edges {
             fadjlist[u as usize].push(v);
             fadjlist[v as usize].push(u);

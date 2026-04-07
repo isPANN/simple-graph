@@ -241,6 +241,8 @@ impl CsrGraph {
 pub struct CsrBuilder {
     nv: usize,
     edges: Vec<(u32, u32)>,
+    deg: Vec<usize>,
+    sorted: bool,
 }
 
 impl CsrBuilder {
@@ -249,6 +251,8 @@ impl CsrBuilder {
         CsrBuilder {
             nv,
             edges: Vec::new(),
+            deg: vec![0; nv],
+            sorted: true,
         }
     }
 
@@ -257,6 +261,8 @@ impl CsrBuilder {
         CsrBuilder {
             nv,
             edges: Vec::with_capacity(edge_capacity),
+            deg: vec![0; nv],
+            sorted: true,
         }
     }
 
@@ -271,17 +277,64 @@ impl CsrBuilder {
             "vertex out of range"
         );
         let (u, v) = if u < v { (u, v) } else { (v, u) };
+        if self.sorted {
+            if let Some(&last) = self.edges.last() {
+                if (u, v) < last {
+                    self.sorted = false;
+                }
+            }
+        }
+        self.deg[u as usize] += 1;
+        self.deg[v as usize] += 1;
         self.edges.push((u, v));
     }
 
     /// Build the CsrGraph. Sorts and deduplicates edges.
     pub fn build(mut self) -> CsrGraph {
-        let already_sorted = self.edges.windows(2).all(|w| w[0] <= w[1]);
-        if !already_sorted {
+        if !self.sorted {
             self.edges.sort_unstable();
         }
+        let old_len = self.edges.len();
         self.edges.dedup();
-        CsrGraph::from_sorted_unique_edges(self.nv, &self.edges)
+        let deduped = self.edges.len() != old_len;
+
+        if deduped {
+            // Degrees are stale after dedup — recount.
+            self.deg.fill(0);
+            for &(u, v) in &self.edges {
+                self.deg[u as usize] += 1;
+                self.deg[v as usize] += 1;
+            }
+        }
+
+        // Build offsets from pre-counted degrees (skip from_sorted_unique_edges).
+        let n = self.nv;
+        let ne = self.edges.len();
+        let mut offsets = Vec::with_capacity(n + 1);
+        let mut running = 0usize;
+        offsets.push(0);
+        for &d in &self.deg {
+            running += d;
+            offsets.push(running);
+        }
+
+        // Fill targets using write cursors (reuse deg allocation).
+        let mut targets = vec![0u32; running];
+        let mut cursor = self.deg;
+        cursor.copy_from_slice(&offsets[..n]);
+        for &(u, v) in &self.edges {
+            targets[cursor[u as usize]] = v;
+            cursor[u as usize] += 1;
+            targets[cursor[v as usize]] = u;
+            cursor[v as usize] += 1;
+        }
+
+        CsrGraph {
+            nv: n,
+            ne,
+            offsets,
+            targets,
+        }
     }
 }
 
