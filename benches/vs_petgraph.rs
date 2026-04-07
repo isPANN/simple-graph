@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
+use easygraph::{algo, gen, CsrBuilder, CsrGraph};
 use petgraph::graph::UnGraph;
 use petgraph::visit::Walker;
-use easygraph::{algo, gen, CsrBuilder, CsrGraph};
 use std::hint::black_box;
 
 /// Build a petgraph UnGraph equivalent to a 100x100 grid.
