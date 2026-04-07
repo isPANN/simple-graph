@@ -14,6 +14,7 @@ pub use iter::{edges, Edges};
 pub use simple_graph::SimpleGraph;
 
 // Compile-time assertions: all public types are Send + Sync.
+#[allow(dead_code)]
 const _: () = {
     fn assert_send_sync<T: Send + Sync>() {}
     fn assertions() {
