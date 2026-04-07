@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use petgraph::graph::UnGraph;
 use petgraph::visit::Walker;
-use simple_graph::{algo, gen, CsrGraph};
+use simple_graph::{algo, gen, CsrBuilder, CsrGraph};
 
 /// Build a petgraph UnGraph equivalent to a 100x100 grid.
 fn petgraph_grid(rows: usize, cols: usize) -> UnGraph<(), ()> {
@@ -85,6 +85,28 @@ fn bench_construction_vs(c: &mut Criterion) {
                 }
             }
             CsrGraph::from_sorted_unique_edges(n, &edges)
+        })
+    });
+
+    // CsrBuilder — incremental add_edge like petgraph
+    group.bench_function("csr_builder_grid_100x100", |b| {
+        b.iter(|| {
+            let rows = black_box(100);
+            let cols = black_box(100);
+            let n = rows * cols;
+            let mut builder = CsrBuilder::with_capacity(n, 2 * n);
+            for r in 0..rows {
+                for c in 0..cols {
+                    let v = (r * cols + c) as u32;
+                    if c + 1 < cols {
+                        builder.add_edge(v, v + 1);
+                    }
+                    if r + 1 < rows {
+                        builder.add_edge(v, v + cols as u32);
+                    }
+                }
+            }
+            builder.build()
         })
     });
 

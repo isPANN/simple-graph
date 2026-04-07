@@ -193,6 +193,67 @@ impl CsrGraph {
     }
 }
 
+/// Incremental builder for [`CsrGraph`]. Collects edges one at a time,
+/// then builds the CSR representation in a single pass.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::CsrBuilder;
+///
+/// let mut builder = CsrBuilder::new(4);
+/// builder.add_edge(0, 1);
+/// builder.add_edge(1, 2);
+/// builder.add_edge(2, 3);
+/// let csr = builder.build();
+/// assert_eq!(csr.nv(), 4);
+/// assert_eq!(csr.ne(), 3);
+/// assert!(csr.has_edge(0, 1));
+/// ```
+pub struct CsrBuilder {
+    nv: usize,
+    edges: Vec<(u32, u32)>,
+}
+
+impl CsrBuilder {
+    /// Create a builder for a graph with `nv` vertices.
+    pub fn new(nv: usize) -> Self {
+        CsrBuilder {
+            nv,
+            edges: Vec::new(),
+        }
+    }
+
+    /// Create a builder with pre-allocated edge capacity.
+    pub fn with_capacity(nv: usize, edge_capacity: usize) -> Self {
+        CsrBuilder {
+            nv,
+            edges: Vec::with_capacity(edge_capacity),
+        }
+    }
+
+    /// Add an undirected edge. Duplicates are collapsed during `build()`.
+    ///
+    /// # Panics
+    /// Panics on self-loops or out-of-range vertices.
+    pub fn add_edge(&mut self, u: u32, v: u32) {
+        assert_ne!(u, v, "self-loops not allowed");
+        assert!(
+            (u as usize) < self.nv && (v as usize) < self.nv,
+            "vertex out of range"
+        );
+        let (u, v) = if u < v { (u, v) } else { (v, u) };
+        self.edges.push((u, v));
+    }
+
+    /// Build the CsrGraph. Sorts and deduplicates edges.
+    pub fn build(mut self) -> CsrGraph {
+        self.edges.sort_unstable();
+        self.edges.dedup();
+        CsrGraph::from_sorted_unique_edges(self.nv, &self.edges)
+    }
+}
+
 impl From<&SimpleGraph> for CsrGraph {
     fn from(sg: &SimpleGraph) -> Self {
         let n = sg.nv();
