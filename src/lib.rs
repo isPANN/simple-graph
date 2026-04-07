@@ -1,3 +1,4 @@
+pub mod algo;
 mod csr;
 mod graph;
 mod iter;
