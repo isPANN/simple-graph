@@ -14,9 +14,7 @@ fn bench_construction(c: &mut Criterion) {
         b.iter(|| SimpleGraph::from_edges(black_box(10_000), black_box(&edges)))
     });
 
-    group.bench_function("complete_100", |b| {
-        b.iter(|| gen::complete(black_box(100)))
-    });
+    group.bench_function("complete_100", |b| b.iter(|| gen::complete(black_box(100))));
 
     group.finish();
 }
@@ -39,13 +37,9 @@ fn bench_query(c: &mut Criterion) {
         b.iter(|| g.neighbors(black_box(50)))
     });
 
-    group.bench_function("neighbors_csr", |b| {
-        b.iter(|| csr.neighbors(black_box(50)))
-    });
+    group.bench_function("neighbors_csr", |b| b.iter(|| csr.neighbors(black_box(50))));
 
-    group.bench_function("degree_sequence", |b| {
-        b.iter(|| g.degree_sequence())
-    });
+    group.bench_function("degree_sequence", |b| b.iter(|| g.degree_sequence()));
 
     group.bench_function("degree_distribution", |b| {
         b.iter(|| g.degree_distribution())
