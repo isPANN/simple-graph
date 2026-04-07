@@ -1,6 +1,6 @@
-use std::hint::black_box;
 use criterion::{criterion_group, criterion_main, Criterion};
 use simple_graph::{algo, gen, CsrGraph, Graph, SimpleGraph};
+use std::hint::black_box;
 
 fn bench_construction(c: &mut Criterion) {
     let mut group = c.benchmark_group("construction");

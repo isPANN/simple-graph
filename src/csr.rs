@@ -115,8 +115,18 @@ impl CsrGraph {
 
     /// Internal constructor from pre-built CSR arrays.
     /// Caller must guarantee: targets sorted per vertex, symmetric, no self-loops.
-    pub(crate) fn from_raw_parts(nv: usize, ne: usize, offsets: Vec<usize>, targets: Vec<u32>) -> Self {
-        Self { nv, ne, offsets, targets }
+    pub(crate) fn from_raw_parts(
+        nv: usize,
+        ne: usize,
+        offsets: Vec<usize>,
+        targets: Vec<u32>,
+    ) -> Self {
+        Self {
+            nv,
+            ne,
+            offsets,
+            targets,
+        }
     }
 
     /// Iterator over all edges `(u, v)` with `u < v`.
