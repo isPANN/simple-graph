@@ -17,20 +17,30 @@ impl CsrGraph {
     /// Number of vertices.
     #[inline]
     pub fn nv(&self) -> usize {
-        if self.offsets.is_empty() { 0 } else { self.offsets.len() - 1 }
+        if self.offsets.is_empty() {
+            0
+        } else {
+            self.offsets.len() - 1
+        }
     }
 
     /// Number of edges.
     #[inline]
-    pub fn ne(&self) -> usize { self.ne }
+    pub fn ne(&self) -> usize {
+        self.ne
+    }
 
     /// Whether vertex `v` exists.
     #[inline]
-    pub fn has_vertex(&self, v: u32) -> bool { (v as usize) < self.nv() }
+    pub fn has_vertex(&self, v: u32) -> bool {
+        (v as usize) < self.nv()
+    }
 
     /// Whether edge `(u, v)` exists. Returns `false` for out-of-range vertices.
     pub fn has_edge(&self, u: u32, v: u32) -> bool {
-        if !self.has_vertex(u) || !self.has_vertex(v) { return false; }
+        if !self.has_vertex(u) || !self.has_vertex(v) {
+            return false;
+        }
         self.neighbors(u).binary_search(&v).is_ok()
     }
 
@@ -73,7 +83,11 @@ impl From<&SimpleGraph> for CsrGraph {
             offset += nbrs.len();
         }
         offsets.push(offset);
-        CsrGraph { ne: sg.ne(), offsets, targets }
+        CsrGraph {
+            ne: sg.ne(),
+            offsets,
+            targets,
+        }
     }
 }
 
@@ -87,12 +101,29 @@ impl<'a> IntoIterator for &'a CsrGraph {
 }
 
 impl Graph for CsrGraph {
-    #[inline] fn nv(&self) -> usize { CsrGraph::nv(self) }
-    #[inline] fn ne(&self) -> usize { CsrGraph::ne(self) }
-    #[inline] fn has_vertex(&self, v: u32) -> bool { CsrGraph::has_vertex(self, v) }
-    fn has_edge(&self, u: u32, v: u32) -> bool { CsrGraph::has_edge(self, u, v) }
-    #[inline] fn degree(&self, v: u32) -> usize { CsrGraph::degree(self, v) }
-    #[inline] fn neighbors(&self, v: u32) -> &[u32] { CsrGraph::neighbors(self, v) }
+    #[inline]
+    fn nv(&self) -> usize {
+        CsrGraph::nv(self)
+    }
+    #[inline]
+    fn ne(&self) -> usize {
+        CsrGraph::ne(self)
+    }
+    #[inline]
+    fn has_vertex(&self, v: u32) -> bool {
+        CsrGraph::has_vertex(self, v)
+    }
+    fn has_edge(&self, u: u32, v: u32) -> bool {
+        CsrGraph::has_edge(self, u, v)
+    }
+    #[inline]
+    fn degree(&self, v: u32) -> usize {
+        CsrGraph::degree(self, v)
+    }
+    #[inline]
+    fn neighbors(&self, v: u32) -> &[u32] {
+        CsrGraph::neighbors(self, v)
+    }
 }
 
 #[cfg(test)]

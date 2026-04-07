@@ -1,5 +1,5 @@
-use rand::Rng;
 use crate::SimpleGraph;
+use rand::Rng;
 
 /// Erdos-Renyi random graph G(n, p).
 /// Each possible edge is included independently with probability `p`.
@@ -18,8 +18,8 @@ pub fn erdos_renyi(n: usize, p: f64, rng: &mut impl Rng) -> SimpleGraph {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
     use rand::rngs::SmallRng;
+    use rand::SeedableRng;
 
     #[test]
     fn test_erdos_renyi_empty() {

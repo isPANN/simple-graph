@@ -1,5 +1,5 @@
-use std::io::{self, BufRead, Write};
 use crate::{Graph, SimpleGraph};
+use std::io::{self, BufRead, Write};
 
 /// Write a graph in edge-list format.
 /// Format: first line is `nv ne`, followed by one `u v` line per edge (u < v).

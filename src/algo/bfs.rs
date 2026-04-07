@@ -1,5 +1,5 @@
-use std::collections::VecDeque;
 use crate::graph::Graph;
+use std::collections::VecDeque;
 
 /// BFS iterator from a source vertex.
 pub struct Bfs<'a, G: Graph + ?Sized> {
@@ -17,7 +17,11 @@ pub fn bfs<G: Graph>(graph: &G, source: u32) -> Bfs<'_, G> {
         visited[source as usize] = true;
         queue.push_back(source);
     }
-    Bfs { graph, queue, visited }
+    Bfs {
+        graph,
+        queue,
+        visited,
+    }
 }
 
 impl<'a, G: Graph + ?Sized> Iterator for Bfs<'a, G> {
@@ -37,7 +41,9 @@ impl<'a, G: Graph + ?Sized> Iterator for Bfs<'a, G> {
 /// Whether the graph is connected (empty and single-vertex graphs are connected).
 pub fn is_connected<G: Graph>(graph: &G) -> bool {
     let n = graph.nv();
-    if n <= 1 { return true; }
+    if n <= 1 {
+        return true;
+    }
     bfs(graph, 0).count() == n
 }
 

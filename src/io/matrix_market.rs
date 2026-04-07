@@ -1,5 +1,5 @@
-use std::io::{self, BufRead, Write};
 use crate::{graph::Graph, SimpleGraph};
+use std::io::{self, BufRead, Write};
 
 /// Write a graph in Matrix Market symmetric coordinate pattern format.
 /// Uses 1-based indexing. Writes the lower triangle (row > col).
@@ -29,16 +29,28 @@ pub fn read_matrix_market(r: impl BufRead) -> io::Result<SimpleGraph> {
         .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "empty input"))??;
     let banner_lower = banner.trim().to_lowercase();
     if !banner_lower.starts_with("%%matrixmarket") {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "missing %%MatrixMarket banner"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "missing %%MatrixMarket banner",
+        ));
     }
     if !banner_lower.contains("coordinate") {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "only coordinate format supported"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "only coordinate format supported",
+        ));
     }
     if !banner_lower.contains("pattern") {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "only pattern format supported"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "only pattern format supported",
+        ));
     }
     if !banner_lower.contains("symmetric") {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "only symmetric format supported"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "only symmetric format supported",
+        ));
     }
 
     // Parse size line
@@ -47,19 +59,30 @@ pub fn read_matrix_market(r: impl BufRead) -> io::Result<SimpleGraph> {
             .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "missing size line"))??;
         let trimmed = line.trim();
-        if trimmed.starts_with('%') || trimmed.is_empty() { continue; }
+        if trimmed.starts_with('%') || trimmed.is_empty() {
+            continue;
+        }
         let mut parts = trimmed.split_whitespace();
-        let nrow: usize = parts.next()
+        let nrow: usize = parts
+            .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing nrow"))?
-            .parse().map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        let ncol: usize = parts.next()
+            .parse()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let ncol: usize = parts
+            .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing ncol"))?
-            .parse().map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        let nnz: usize = parts.next()
+            .parse()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let nnz: usize = parts
+            .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing nnz"))?
-            .parse().map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+            .parse()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         if nrow != ncol {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "non-square matrix"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "non-square matrix",
+            ));
         }
         break (nrow, nnz);
     };
@@ -69,19 +92,31 @@ pub fn read_matrix_market(r: impl BufRead) -> io::Result<SimpleGraph> {
     for line in lines {
         let line = line?;
         let trimmed = line.trim();
-        if trimmed.is_empty() || trimmed.starts_with('%') { continue; }
+        if trimmed.is_empty() || trimmed.starts_with('%') {
+            continue;
+        }
         let mut parts = trimmed.split_whitespace();
-        let row: u32 = parts.next()
+        let row: u32 = parts
+            .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing row"))?
-            .parse().map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        let col: u32 = parts.next()
+            .parse()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let col: u32 = parts
+            .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "missing col"))?
-            .parse().map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+            .parse()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         if parts.next().is_some() {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "extra fields in entry line (expected pattern format)"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "extra fields in entry line (expected pattern format)",
+            ));
         }
         if row == 0 || col == 0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "Matrix Market uses 1-based indices"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Matrix Market uses 1-based indices",
+            ));
         }
         edges.push((row - 1, col - 1));
     }

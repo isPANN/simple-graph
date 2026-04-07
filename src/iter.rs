@@ -11,7 +11,11 @@ pub struct Edges<'a, G: Graph + ?Sized> {
 
 /// Create an iterator over all edges `(u, v)` with `u < v` for any [`Graph`].
 pub fn edges<G: Graph>(graph: &G) -> Edges<'_, G> {
-    let mut iter = Edges { graph, u: 0, idx: 0 };
+    let mut iter = Edges {
+        graph,
+        u: 0,
+        idx: 0,
+    };
     iter.skip_to_upper();
     iter
 }

@@ -39,7 +39,9 @@ mod serde_impl {
                         return Err(de::Error::custom("self-loop detected"));
                     }
                     if i > 0 && nbrs[i - 1] >= v {
-                        return Err(de::Error::custom("adjacency list not sorted or has duplicates"));
+                        return Err(de::Error::custom(
+                            "adjacency list not sorted or has duplicates",
+                        ));
                     }
                     // Check symmetry: u must appear in v's list
                     if raw.fadjlist[v as usize].binary_search(&(u as u32)).is_err() {
@@ -65,10 +67,7 @@ impl SimpleGraph {
     /// # Panics
     /// Panics if `n > u32::MAX as usize`.
     pub fn new(n: usize) -> Self {
-        assert!(
-            n <= u32::MAX as usize,
-            "vertex count exceeds u32::MAX"
-        );
+        assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
         Self {
             ne: 0,
             fadjlist: vec![vec![]; n],
@@ -84,10 +83,7 @@ impl SimpleGraph {
         let mut fadjlist: Vec<Vec<u32>> = vec![vec![]; n];
         for &(u, v) in edges {
             assert_ne!(u, v, "self-loops not allowed");
-            assert!(
-                (u as usize) < n && (v as usize) < n,
-                "vertex out of range"
-            );
+            assert!((u as usize) < n && (v as usize) < n, "vertex out of range");
             fadjlist[u as usize].push(v);
             fadjlist[v as usize].push(u);
         }
@@ -238,9 +234,9 @@ impl SimpleGraph {
         let mut old_to_new = vec![u32::MAX; n];
         let mut vmap: Vec<u32> = Vec::new();
         let mut new_idx = 0u32;
-        for old in 0..n {
+        for (old, slot) in old_to_new.iter_mut().enumerate() {
             if keep(old) {
-                old_to_new[old] = new_idx;
+                *slot = new_idx;
                 vmap.push(old as u32);
                 new_idx += 1;
             }
@@ -252,19 +248,33 @@ impl SimpleGraph {
                 .iter()
                 .filter_map(|&nbr| {
                     let new = old_to_new[nbr as usize];
-                    if new != u32::MAX { Some(new) } else { None }
+                    if new != u32::MAX {
+                        Some(new)
+                    } else {
+                        None
+                    }
                 })
                 .collect();
             ne += new_nbrs.len();
             fadjlist.push(new_nbrs);
         }
-        (SimpleGraph { ne: ne / 2, fadjlist }, vmap)
+        (
+            SimpleGraph {
+                ne: ne / 2,
+                fadjlist,
+            },
+            vmap,
+        )
     }
 }
 
 impl SimpleGraph {
     pub(crate) fn from_csr(offsets: &[usize], targets: &[u32], ne: usize) -> Self {
-        let n = if offsets.is_empty() { 0 } else { offsets.len() - 1 };
+        let n = if offsets.is_empty() {
+            0
+        } else {
+            offsets.len() - 1
+        };
         let mut fadjlist = Vec::with_capacity(n);
         for v in 0..n {
             fadjlist.push(targets[offsets[v]..offsets[v + 1]].to_vec());
@@ -297,22 +307,37 @@ impl SimpleGraph {
             list.dedup();
             ne += list.len();
         }
-        Ok(Self { ne: ne / 2, fadjlist })
+        Ok(Self {
+            ne: ne / 2,
+            fadjlist,
+        })
     }
 }
 
 impl Graph for SimpleGraph {
     #[inline]
-    fn nv(&self) -> usize { SimpleGraph::nv(self) }
+    fn nv(&self) -> usize {
+        SimpleGraph::nv(self)
+    }
     #[inline]
-    fn ne(&self) -> usize { SimpleGraph::ne(self) }
+    fn ne(&self) -> usize {
+        SimpleGraph::ne(self)
+    }
     #[inline]
-    fn has_vertex(&self, v: u32) -> bool { SimpleGraph::has_vertex(self, v) }
-    fn has_edge(&self, u: u32, v: u32) -> bool { SimpleGraph::has_edge(self, u, v) }
+    fn has_vertex(&self, v: u32) -> bool {
+        SimpleGraph::has_vertex(self, v)
+    }
+    fn has_edge(&self, u: u32, v: u32) -> bool {
+        SimpleGraph::has_edge(self, u, v)
+    }
     #[inline]
-    fn degree(&self, v: u32) -> usize { SimpleGraph::degree(self, v) }
+    fn degree(&self, v: u32) -> usize {
+        SimpleGraph::degree(self, v)
+    }
     #[inline]
-    fn neighbors(&self, v: u32) -> &[u32] { SimpleGraph::neighbors(self, v) }
+    fn neighbors(&self, v: u32) -> &[u32] {
+        SimpleGraph::neighbors(self, v)
+    }
 }
 
 impl Default for SimpleGraph {
