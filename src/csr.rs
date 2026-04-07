@@ -48,6 +48,11 @@ impl CsrGraph {
         &self.targets[self.offsets[vi]..self.offsets[vi + 1]]
     }
 
+    /// Iterator over all edges `(u, v)` with `u < v`.
+    pub fn edges(&self) -> crate::iter::Edges<'_, Self> {
+        crate::iter::edges(self)
+    }
+
     /// Convert back to a mutable [`SimpleGraph`].
     pub fn to_simple_graph(&self) -> SimpleGraph {
         SimpleGraph::from_csr(&self.offsets, &self.targets, self.ne)
@@ -69,6 +74,15 @@ impl From<&SimpleGraph> for CsrGraph {
         }
         offsets.push(offset);
         CsrGraph { ne: sg.ne(), offsets, targets }
+    }
+}
+
+impl<'a> IntoIterator for &'a CsrGraph {
+    type Item = (u32, u32);
+    type IntoIter = crate::iter::Edges<'a, CsrGraph>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.edges()
     }
 }
 

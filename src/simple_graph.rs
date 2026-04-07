@@ -1,7 +1,7 @@
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
 
-use crate::{Edges, Graph};
+use crate::Graph;
 
 /// An undirected simple graph with sorted adjacency lists.
 ///
@@ -167,8 +167,8 @@ impl SimpleGraph {
     }
 
     /// Iterator over all edges `(u, v)` with `u < v`.
-    pub fn edges(&self) -> Edges<'_> {
-        Edges::new(self)
+    pub fn edges(&self) -> crate::iter::Edges<'_, Self> {
+        crate::iter::edges(self)
     }
 
     /// Add a new isolated vertex and return its index.
@@ -277,6 +277,15 @@ impl Graph for SimpleGraph {
 impl Default for SimpleGraph {
     fn default() -> Self {
         Self::new(0)
+    }
+}
+
+impl<'a> IntoIterator for &'a SimpleGraph {
+    type Item = (u32, u32);
+    type IntoIter = crate::iter::Edges<'a, SimpleGraph>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.edges()
     }
 }
 
