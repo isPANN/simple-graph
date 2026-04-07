@@ -11,6 +11,7 @@ use crate::SimpleGraph;
 /// assert_eq!(g.ne(), 6); // 4 choose 2
 /// ```
 pub fn complete(n: usize) -> SimpleGraph {
+    assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
     // Direct adjacency list construction: vertex v's neighbors are [0..v, v+1..n].
     // Two branchless extends instead of a per-element branch.
     let ne = n * n.saturating_sub(1) / 2;
@@ -58,6 +59,7 @@ pub fn cycle(n: usize) -> SimpleGraph {
 /// assert_eq!(g.ne(), 3);
 /// ```
 pub fn path(n: usize) -> SimpleGraph {
+    assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
     if n <= 1 {
         return SimpleGraph::new(n);
     }
@@ -78,6 +80,7 @@ pub fn path(n: usize) -> SimpleGraph {
 /// ```
 pub fn grid_2d(rows: usize, cols: usize) -> SimpleGraph {
     let n = rows * cols;
+    assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
     if n == 0 {
         return SimpleGraph::new(0);
     }

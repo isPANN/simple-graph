@@ -459,6 +459,7 @@ impl SimpleGraph {
         if n > u32::MAX as usize {
             return Err(format!("vertex count {} exceeds u32::MAX", n));
         }
+        let mut deg = vec![0usize; n];
         for &(u, v) in edges {
             if u == v {
                 return Err(format!("self-loop on vertex {}", u));
@@ -466,10 +467,24 @@ impl SimpleGraph {
             if (u as usize) >= n || (v as usize) >= n {
                 return Err(format!("vertex out of range: ({}, {}), n={}", u, v, n));
             }
+            deg[u as usize] += 1;
+            deg[v as usize] += 1;
         }
-        // After validation, use the fast path — callers (I/O readers) already
-        // canonicalize, sort, and dedup edges before calling this.
-        Ok(Self::from_sorted_unique_edges(n, edges))
+        let mut fadjlist: Vec<Vec<u32>> = deg.iter().map(|&d| Vec::with_capacity(d)).collect();
+        for &(u, v) in edges {
+            fadjlist[u as usize].push(v);
+            fadjlist[v as usize].push(u);
+        }
+        let mut ne = 0;
+        for list in &mut fadjlist {
+            list.sort_unstable();
+            list.dedup();
+            ne += list.len();
+        }
+        Ok(Self {
+            ne: ne / 2,
+            fadjlist,
+        })
     }
 }
 

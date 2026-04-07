@@ -165,6 +165,8 @@ impl CsrGraph {
     pub fn from_sorted_unique_edges(n: usize, edges: &[(u32, u32)]) -> Self {
         let mut deg = vec![0usize; n];
         for &(u, v) in edges {
+            assert_ne!(u, v, "self-loops not allowed");
+            assert!((u as usize) < n && (v as usize) < n, "vertex out of range");
             deg[u as usize] += 1;
             deg[v as usize] += 1;
         }
