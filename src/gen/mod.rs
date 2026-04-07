@@ -1,5 +1,5 @@
 mod basic;
-pub use basic::{complete, cycle, grid_2d, path};
+pub use basic::{complete, complete_csr, cycle, grid_2d, grid_2d_csr, path};
 
 #[cfg(feature = "rand")]
 mod random;

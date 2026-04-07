@@ -113,6 +113,12 @@ impl CsrGraph {
         &self.targets[self.offsets[vi]..self.offsets[vi + 1]]
     }
 
+    /// Internal constructor from pre-built CSR arrays.
+    /// Caller must guarantee: targets sorted per vertex, symmetric, no self-loops.
+    pub(crate) fn from_raw_parts(nv: usize, ne: usize, offsets: Vec<usize>, targets: Vec<u32>) -> Self {
+        Self { nv, ne, offsets, targets }
+    }
+
     /// Iterator over all edges `(u, v)` with `u < v`.
     ///
     /// # Examples
@@ -176,10 +182,11 @@ impl CsrGraph {
         for &d in &deg {
             offsets.push(offsets.last().unwrap() + d);
         }
-        // Fill flat targets using write cursors
+        // Fill flat targets using write cursors (reuse deg allocation)
         let total = offsets[n];
         let mut targets = vec![0u32; total];
-        let mut cursor = offsets[..n].to_vec();
+        let mut cursor = deg;
+        cursor.copy_from_slice(&offsets[..n]);
         for &(u, v) in edges {
             targets[cursor[u as usize]] = v;
             cursor[u as usize] += 1;
@@ -250,7 +257,10 @@ impl CsrBuilder {
 
     /// Build the CsrGraph. Sorts and deduplicates edges.
     pub fn build(mut self) -> CsrGraph {
-        self.edges.sort_unstable();
+        let already_sorted = self.edges.windows(2).all(|w| w[0] <= w[1]);
+        if !already_sorted {
+            self.edges.sort_unstable();
+        }
         self.edges.dedup();
         CsrGraph::from_sorted_unique_edges(self.nv, &self.edges)
     }

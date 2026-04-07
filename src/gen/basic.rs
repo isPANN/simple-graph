@@ -1,4 +1,4 @@
-use crate::SimpleGraph;
+use crate::{CsrGraph, SimpleGraph};
 
 /// Complete graph K_n.
 ///
@@ -84,20 +84,106 @@ pub fn grid_2d(rows: usize, cols: usize) -> SimpleGraph {
     if n == 0 {
         return SimpleGraph::new(0);
     }
-    let mut edges = Vec::new();
+    // Build adjacency lists directly — avoids intermediate edge Vec and extra passes.
+    let ne = rows * (cols - 1) + (rows - 1) * cols;
+    let cols_u32 = cols as u32;
+    let mut fadjlist = Vec::with_capacity(n);
     for r in 0..rows {
         for c in 0..cols {
             let v = (r * cols + c) as u32;
+            let deg = (if r > 0 { 1 } else { 0 })
+                + (if c > 0 { 1 } else { 0 })
+                + (if c + 1 < cols { 1 } else { 0 })
+                + (if r + 1 < rows { 1 } else { 0 });
+            let mut nbrs = Vec::with_capacity(deg);
+            // Push in sorted order: up < left < right < down
+            if r > 0 {
+                nbrs.push(v - cols_u32);
+            }
+            if c > 0 {
+                nbrs.push(v - 1);
+            }
             if c + 1 < cols {
-                edges.push((v, v + 1));
+                nbrs.push(v + 1);
             }
             if r + 1 < rows {
-                edges.push((v, v + cols as u32));
+                nbrs.push(v + cols_u32);
+            }
+            fadjlist.push(nbrs);
+        }
+    }
+    SimpleGraph::from_raw(ne, fadjlist)
+}
+
+/// Complete graph K_n as a [`CsrGraph`].
+///
+/// Builds the CSR structure directly — no intermediate edge list.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::gen;
+///
+/// let g = gen::complete_csr(4);
+/// assert_eq!(g.ne(), 6);
+/// ```
+pub fn complete_csr(n: usize) -> CsrGraph {
+    assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
+    let ne = n * n.saturating_sub(1) / 2;
+    let mut offsets = Vec::with_capacity(n + 1);
+    let mut targets = Vec::with_capacity(ne * 2);
+    for v in 0..n as u32 {
+        offsets.push(targets.len());
+        targets.extend(0..v);
+        targets.extend(v + 1..n as u32);
+    }
+    offsets.push(targets.len());
+    CsrGraph::from_raw_parts(n, ne, offsets, targets)
+}
+
+/// 2D grid graph with `rows` x `cols` vertices as a [`CsrGraph`].
+///
+/// Builds the CSR structure directly in a single pass — no intermediate
+/// edge list, degree counting, or prefix sum.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::gen;
+///
+/// let g = gen::grid_2d_csr(3, 4);
+/// assert_eq!(g.nv(), 12);
+/// ```
+pub fn grid_2d_csr(rows: usize, cols: usize) -> CsrGraph {
+    let n = rows * cols;
+    assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
+    if n == 0 {
+        return CsrGraph::from_raw_parts(0, 0, vec![0], Vec::new());
+    }
+    let ne = rows * (cols - 1) + (rows - 1) * cols;
+    let cols_u32 = cols as u32;
+    let mut offsets = Vec::with_capacity(n + 1);
+    let mut targets = Vec::with_capacity(ne * 2);
+    for r in 0..rows {
+        for c in 0..cols {
+            offsets.push(targets.len());
+            let v = (r * cols + c) as u32;
+            if r > 0 {
+                targets.push(v - cols_u32);
+            }
+            if c > 0 {
+                targets.push(v - 1);
+            }
+            if c + 1 < cols {
+                targets.push(v + 1);
+            }
+            if r + 1 < rows {
+                targets.push(v + cols_u32);
             }
         }
     }
-    // Edges are canonical (u < v), sorted by construction, and unique.
-    SimpleGraph::from_sorted_unique_edges(n, &edges)
+    offsets.push(targets.len());
+    CsrGraph::from_raw_parts(n, ne, offsets, targets)
 }
 
 #[cfg(test)]
@@ -189,5 +275,42 @@ mod tests {
         assert_eq!(grid_2d(0, 5).nv(), 0);
         assert_eq!(grid_2d(5, 0).nv(), 0);
         assert_eq!(grid_2d(0, 0).nv(), 0);
+    }
+
+    #[test]
+    fn test_complete_csr_matches_simple() {
+        use crate::Graph;
+        let sg = complete(5);
+        let csr = complete_csr(5);
+        assert_eq!(csr.nv(), sg.nv());
+        assert_eq!(csr.ne(), sg.ne());
+        for u in 0..5u32 {
+            assert_eq!(csr.neighbors(u), sg.neighbors(u));
+        }
+    }
+
+    #[test]
+    fn test_grid_2d_csr_matches_simple() {
+        use crate::Graph;
+        let sg = grid_2d(10, 10);
+        let csr = grid_2d_csr(10, 10);
+        assert_eq!(csr.nv(), sg.nv());
+        assert_eq!(csr.ne(), sg.ne());
+        for u in 0..100u32 {
+            assert_eq!(csr.neighbors(u), sg.neighbors(u));
+        }
+    }
+
+    #[test]
+    fn test_grid_2d_csr_edge_cases() {
+        assert_eq!(grid_2d_csr(0, 0).nv(), 0);
+        assert_eq!(grid_2d_csr(1, 1).nv(), 1);
+        assert_eq!(grid_2d_csr(1, 1).ne(), 0);
+        let g = grid_2d_csr(1, 5);
+        assert_eq!(g.nv(), 5);
+        assert_eq!(g.ne(), 4);
+        let g = grid_2d_csr(5, 1);
+        assert_eq!(g.nv(), 5);
+        assert_eq!(g.ne(), 4);
     }
 }

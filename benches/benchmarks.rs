@@ -1,4 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use std::hint::black_box;
+use criterion::{criterion_group, criterion_main, Criterion};
 use simple_graph::{algo, gen, CsrGraph, Graph, SimpleGraph};
 
 fn bench_construction(c: &mut Criterion) {

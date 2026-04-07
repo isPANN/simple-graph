@@ -6,6 +6,8 @@ use crate::graph::Graph;
 pub struct Edges<'a, G: Graph + ?Sized> {
     graph: &'a G,
     u: u32,
+    nv: u32,
+    nbrs: &'a [u32],
     idx: usize,
 }
 
@@ -21,22 +23,24 @@ pub struct Edges<'a, G: Graph + ?Sized> {
 /// assert_eq!(e, vec![(0, 1), (1, 2)]);
 /// ```
 pub fn edges<G: Graph>(graph: &G) -> Edges<'_, G> {
+    let nv = graph.nv() as u32;
     let mut iter = Edges {
         graph,
         u: 0,
+        nv,
+        nbrs: &[],
         idx: 0,
     };
-    iter.skip_to_upper();
+    iter.advance_vertex();
     iter
 }
 
 impl<'a, G: Graph + ?Sized> Edges<'a, G> {
-    /// Advance `idx` past neighbors ≤ `self.u` using binary search.
-    fn skip_to_upper(&mut self) {
-        let nv = self.graph.nv() as u32;
-        if self.u < nv {
-            let nbrs = self.graph.neighbors(self.u);
-            self.idx = nbrs.partition_point(|&v| v <= self.u);
+    /// Load the neighbor slice for the current vertex and skip neighbors ≤ `self.u`.
+    fn advance_vertex(&mut self) {
+        if self.u < self.nv {
+            self.nbrs = self.graph.neighbors(self.u);
+            self.idx = self.nbrs.partition_point(|&v| v <= self.u);
         }
     }
 }
@@ -45,16 +49,14 @@ impl<'a, G: Graph + ?Sized> Iterator for Edges<'a, G> {
     type Item = (u32, u32);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let nv = self.graph.nv() as u32;
-        while self.u < nv {
-            let nbrs = self.graph.neighbors(self.u);
-            if self.idx < nbrs.len() {
-                let v = nbrs[self.idx];
+        while self.u < self.nv {
+            if self.idx < self.nbrs.len() {
+                let v = self.nbrs[self.idx];
                 self.idx += 1;
                 return Some((self.u, v));
             }
             self.u += 1;
-            self.skip_to_upper();
+            self.advance_vertex();
         }
         None
     }

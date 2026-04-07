@@ -1,4 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use std::hint::black_box;
+use criterion::{criterion_group, criterion_main, Criterion};
 use petgraph::graph::UnGraph;
 use petgraph::visit::Walker;
 use simple_graph::{algo, gen, CsrBuilder, CsrGraph};
@@ -53,8 +54,8 @@ fn bench_construction_vs(c: &mut Criterion) {
         b.iter(|| gen::grid_2d(black_box(100), black_box(100)))
     });
 
-    // CsrGraph direct construction — skips Vec<Vec<u32>> allocation entirely
-    group.bench_function("csr_direct_grid_100x100", |b| {
+    // CsrGraph via from_sorted_unique_edges (manual edge list)
+    group.bench_function("csr_from_edges_grid_100x100", |b| {
         b.iter(|| {
             let rows = black_box(100);
             let cols = black_box(100);
@@ -75,7 +76,11 @@ fn bench_construction_vs(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("csr_direct_complete_100", |b| {
+    group.bench_function("csr_graph_grid_100x100", |b| {
+        b.iter(|| gen::grid_2d_csr(black_box(100), black_box(100)))
+    });
+
+    group.bench_function("csr_from_edges_complete_100", |b| {
         b.iter(|| {
             let n = black_box(100);
             let mut edges = Vec::with_capacity(n * (n - 1) / 2);
@@ -86,6 +91,10 @@ fn bench_construction_vs(c: &mut Criterion) {
             }
             CsrGraph::from_sorted_unique_edges(n, &edges)
         })
+    });
+
+    group.bench_function("csr_graph_complete_100", |b| {
+        b.iter(|| gen::complete_csr(black_box(100)))
     });
 
     // CsrBuilder — incremental add_edge like petgraph
@@ -226,11 +235,14 @@ fn bench_connected_components_vs(c: &mut Criterion) {
 
 fn bench_edge_count_vs(c: &mut Criterion) {
     let sg = gen::grid_2d(100, 100);
+    let csr = gen::grid_2d_csr(100, 100);
     let pg = petgraph_grid(100, 100);
 
     let mut group = c.benchmark_group("vs_edge_iteration");
 
     group.bench_function("simple_graph_edges", |b| b.iter(|| sg.edges().count()));
+
+    group.bench_function("csr_edges", |b| b.iter(|| csr.edges().count()));
 
     group.bench_function("petgraph_edges", |b| {
         b.iter(|| pg.edge_references().count())
