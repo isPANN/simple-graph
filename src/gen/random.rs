@@ -1,5 +1,6 @@
 use crate::SimpleGraph;
 use rand::Rng;
+use rand::RngExt;
 
 /// Erdos-Renyi random graph G(n, p).
 /// Each possible edge is included independently with probability `p`.
@@ -7,7 +8,7 @@ pub fn erdos_renyi(n: usize, p: f64, rng: &mut impl Rng) -> SimpleGraph {
     let mut edges = Vec::new();
     for u in 0..n as u32 {
         for v in (u + 1)..n as u32 {
-            if rng.random::<f64>() < p {
+            if rng.random_bool(p) {
                 edges.push((u, v));
             }
         }

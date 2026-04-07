@@ -7,7 +7,7 @@ description = "Lightweight undirected graph with sorted adjacency lists, modeled
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true }
-rand = { version = "0.9", optional = true }
+rand = { version = "0.10", optional = true }
 
 [dev-dependencies]
 serde_json = "1"
