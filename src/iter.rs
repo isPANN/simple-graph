@@ -16,7 +16,7 @@ pub struct Edges<'a, G: Graph + ?Sized> {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, edges};
+/// use easygraph::{SimpleGraph, edges};
 ///
 /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
 /// let e: Vec<_> = edges(&g).collect();

@@ -7,7 +7,7 @@ use std::io::{self, BufRead, Write};
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, io};
+/// use easygraph::{SimpleGraph, io};
 ///
 /// let g = SimpleGraph::from_edges(3, &[(0, 1)]);
 /// let mut buf = Vec::new();
@@ -36,7 +36,7 @@ pub fn write_matrix_market<G: Graph>(graph: &G, mut w: impl Write) -> io::Result
 /// # Examples
 ///
 /// ```
-/// use simple_graph::io;
+/// use easygraph::io;
 ///
 /// let input = b"%%MatrixMarket matrix coordinate pattern symmetric\n3 3 1\n1 2\n";
 /// let g = io::read_matrix_market(&input[..]).unwrap();

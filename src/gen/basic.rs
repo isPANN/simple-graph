@@ -5,7 +5,7 @@ use crate::{CsrGraph, SimpleGraph};
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 ///
 /// let g = gen::complete(4);
 /// assert_eq!(g.ne(), 6); // 4 choose 2
@@ -33,7 +33,7 @@ pub fn complete(n: usize) -> SimpleGraph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 ///
 /// let g = gen::cycle(5);
 /// assert_eq!(g.ne(), 5);
@@ -53,7 +53,7 @@ pub fn cycle(n: usize) -> SimpleGraph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 ///
 /// let g = gen::path(4);
 /// assert_eq!(g.ne(), 3);
@@ -73,7 +73,7 @@ pub fn path(n: usize) -> SimpleGraph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 ///
 /// let g = gen::grid_2d(3, 4);
 /// assert_eq!(g.nv(), 12);
@@ -122,7 +122,7 @@ pub fn grid_2d(rows: usize, cols: usize) -> SimpleGraph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 ///
 /// let g = gen::complete_csr(4);
 /// assert_eq!(g.ne(), 6);
@@ -149,7 +149,7 @@ pub fn complete_csr(n: usize) -> CsrGraph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 ///
 /// let g = gen::grid_2d_csr(3, 4);
 /// assert_eq!(g.nv(), 12);

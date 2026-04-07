@@ -1,6 +1,7 @@
-# simple-graph
+# easygraph
 
 [![CI](https://github.com/isPANN/simple-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/isPANN/simple-graph/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/easygraph.svg)](https://crates.io/crates/easygraph)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Lightweight undirected graph library for Rust, modeled on Julia's [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl).
@@ -9,15 +10,15 @@ Lightweight undirected graph library for Rust, modeled on Julia's [Graphs.jl](ht
 
 - **Two representations** -- `SimpleGraph` (mutable, sorted adjacency lists) and `CsrGraph` (immutable, contiguous memory CSR layout)
 - **`Graph` trait** -- generic algorithms work on both representations with zero-cost monomorphized dispatch
-- **Algorithms** -- BFS, connected components, connectivity testing
+- **Algorithms** -- BFS, DFS, connected components, shortest path, connectivity testing
 - **I/O** -- edge list and Matrix Market (symmetric pattern) formats
-- **Generators** -- complete, cycle, path, grid, Erdos-Renyi
+- **Generators** -- complete, cycle, path, grid, Erdos-Renyi (with CSR variants)
 - **Optional dependencies** -- `serde` (default), `rand` (for random generators)
 
 ## Quick start
 
 ```rust
-use simple_graph::{SimpleGraph, CsrGraph, Graph, algo, gen};
+use easygraph::{SimpleGraph, CsrGraph, Graph, algo, gen};
 
 // Build a graph
 let g = SimpleGraph::from_edges(5, &[(0, 1), (1, 2), (2, 3), (3, 4)]);
@@ -42,7 +43,7 @@ assert_eq!(grid.nv(), 100);
 
 ```toml
 [dependencies]
-simple-graph = { version = "0.1", features = ["rand"] }
+easygraph = { version = "0.1", features = ["rand"] }
 ```
 
 ## License

@@ -5,7 +5,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::new(5);
     /// assert_eq!(g.nv(), 5);
@@ -16,7 +16,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
     /// assert_eq!(g.ne(), 2);
@@ -27,7 +27,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::new(3);
     /// assert!(g.has_vertex(0));
@@ -39,7 +39,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1)]);
     /// assert!(g.has_edge(0, 1));
@@ -54,7 +54,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1), (0, 2)]);
     /// assert_eq!(g.degree(0), 2);
@@ -68,7 +68,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 2), (0, 1)]);
     /// assert_eq!(g.neighbors(0), &[1, 2]); // sorted
@@ -80,7 +80,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(4, &[(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)]);
     /// assert!((g.density() - 1.0).abs() < 1e-10);
@@ -99,7 +99,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(4, &[(0, 1), (0, 2), (0, 3)]);
     /// assert_eq!(g.degree_sequence(), vec![1, 1, 1, 3]);
@@ -115,7 +115,7 @@ pub trait Graph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, Graph};
+    /// use easygraph::{SimpleGraph, Graph};
     ///
     /// let g = SimpleGraph::from_edges(4, &[(0, 1), (0, 2), (0, 3)]);
     /// assert_eq!(g.degree_distribution(), vec![0, 3, 0, 1]);
@@ -142,7 +142,7 @@ pub trait Graph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, density};
+/// use easygraph::{SimpleGraph, density};
 ///
 /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2), (0, 2)]);
 /// assert!((density(&g) - 1.0).abs() < 1e-10);
@@ -156,7 +156,7 @@ pub fn density(g: &impl Graph) -> f64 {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, degree_sequence};
+/// use easygraph::{SimpleGraph, degree_sequence};
 ///
 /// let g = SimpleGraph::from_edges(4, &[(0, 1), (0, 2), (0, 3)]);
 /// assert_eq!(degree_sequence(&g), vec![1, 1, 1, 3]);
@@ -170,7 +170,7 @@ pub fn degree_sequence(g: &impl Graph) -> Vec<usize> {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, Graph};
+/// use easygraph::{SimpleGraph, Graph};
 ///
 /// let g = SimpleGraph::from_edges(4, &[(0, 1), (0, 2), (0, 3)]);
 /// let dist = g.degree_distribution();

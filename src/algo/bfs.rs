@@ -15,7 +15,7 @@ pub struct Bfs<'a, G: Graph + ?Sized> {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, algo};
+/// use easygraph::{SimpleGraph, algo};
 ///
 /// let g = SimpleGraph::from_edges(4, &[(0, 1), (0, 2), (1, 3)]);
 /// let order: Vec<u32> = algo::bfs(&g, 0).collect();
@@ -61,7 +61,7 @@ impl<'a, G: Graph + ?Sized> Iterator for Bfs<'a, G> {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, algo};
+/// use easygraph::{SimpleGraph, algo};
 ///
 /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
 /// assert!(algo::is_connected(&g));
@@ -83,7 +83,7 @@ pub fn is_connected<G: Graph>(graph: &G) -> bool {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, algo};
+/// use easygraph::{SimpleGraph, algo};
 ///
 /// let g = SimpleGraph::from_edges(4, &[(0, 1), (2, 3)]);
 /// let labels = algo::connected_components(&g);

@@ -11,7 +11,7 @@ const UNREACHABLE: u32 = u32::MAX;
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, algo};
+/// use easygraph::{SimpleGraph, algo};
 ///
 /// let g = SimpleGraph::from_edges(4, &[(0, 1), (1, 2), (2, 3)]);
 /// let dist = algo::shortest_path_lengths(&g, 0);

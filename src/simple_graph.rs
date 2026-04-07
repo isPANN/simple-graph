@@ -70,7 +70,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::new(5);
     /// assert_eq!(g.nv(), 5);
@@ -92,7 +92,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
     /// assert_eq!(g.ne(), 2);
@@ -145,7 +145,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::new(3);
     /// assert!(g.has_vertex(2));
@@ -162,7 +162,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1)]);
     /// assert!(g.has_edge(0, 1));
@@ -189,7 +189,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let mut g = SimpleGraph::new(3);
     /// g.add_edge(0, 1);
@@ -216,7 +216,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let mut g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
     /// g.rem_edge(0, 1);
@@ -240,7 +240,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1), (0, 2)]);
     /// assert_eq!(g.degree(0), 2);
@@ -256,7 +256,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(4, &[(0, 3), (0, 1)]);
     /// assert_eq!(g.neighbors(0), &[1, 3]); // sorted
@@ -271,7 +271,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
     /// let edges: Vec<_> = g.edges().collect();
@@ -289,7 +289,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let mut g = SimpleGraph::new(2);
     /// let v = g.add_vertex();
@@ -316,7 +316,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(4, &[(0, 1), (1, 2), (2, 3)]);
     /// let (g2, vmap) = g.rem_vertices(&[1]);
@@ -344,7 +344,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::from_edges(5, &[(0, 1), (1, 2), (2, 3), (3, 4)]);
     /// let (sub, vmap) = g.induced_subgraph(&[1, 2, 3]);
@@ -450,7 +450,7 @@ impl SimpleGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::SimpleGraph;
+    /// use easygraph::SimpleGraph;
     ///
     /// let g = SimpleGraph::try_from_edges(3, &[(0, 1), (1, 2)]).unwrap();
     /// assert_eq!(g.ne(), 2);

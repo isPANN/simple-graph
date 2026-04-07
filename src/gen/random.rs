@@ -8,7 +8,7 @@ use rand::RngExt;
 /// # Examples
 ///
 /// ```
-/// use simple_graph::gen;
+/// use easygraph::gen;
 /// use rand::SeedableRng;
 ///
 /// let mut rng = rand::rngs::SmallRng::seed_from_u64(42);

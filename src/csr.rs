@@ -20,7 +20,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let sg = SimpleGraph::from_edges(3, &[(0, 1)]);
     /// let csr = CsrGraph::from(&sg);
@@ -36,7 +36,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let sg = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
     /// let csr = CsrGraph::from(&sg);
@@ -52,7 +52,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let csr = CsrGraph::from(&SimpleGraph::new(3));
     /// assert!(csr.has_vertex(2));
@@ -68,7 +68,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 1)]));
     /// assert!(csr.has_edge(0, 1));
@@ -86,7 +86,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 1), (0, 2)]));
     /// assert_eq!(csr.degree(0), 2);
@@ -102,7 +102,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 2), (0, 1)]));
     /// assert_eq!(csr.neighbors(0), &[1, 2]);
@@ -134,7 +134,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]));
     /// let edges: Vec<_> = csr.edges().collect();
@@ -149,7 +149,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::{SimpleGraph, CsrGraph};
+    /// use easygraph::{SimpleGraph, CsrGraph};
     ///
     /// let sg = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
     /// let csr = CsrGraph::from(&sg);
@@ -172,7 +172,7 @@ impl CsrGraph {
     /// # Examples
     ///
     /// ```
-    /// use simple_graph::CsrGraph;
+    /// use easygraph::CsrGraph;
     ///
     /// let csr = CsrGraph::from_sorted_unique_edges(3, &[(0, 1), (1, 2)]);
     /// assert_eq!(csr.nv(), 3);
@@ -227,7 +227,7 @@ impl CsrGraph {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::CsrBuilder;
+/// use easygraph::CsrBuilder;
 ///
 /// let mut builder = CsrBuilder::new(4);
 /// builder.add_edge(0, 1);

@@ -14,7 +14,7 @@ pub struct Dfs<'a, G: Graph + ?Sized> {
 /// # Examples
 ///
 /// ```
-/// use simple_graph::{SimpleGraph, algo};
+/// use easygraph::{SimpleGraph, algo};
 ///
 /// let g = SimpleGraph::from_edges(4, &[(0, 1), (1, 2), (2, 3)]);
 /// let order: Vec<u32> = algo::dfs(&g, 0).collect();
