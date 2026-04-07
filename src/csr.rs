@@ -78,12 +78,6 @@ impl CsrGraph {
         if !self.has_vertex(u) || !self.has_vertex(v) {
             return false;
         }
-        // Search the shorter neighbor list for O(log min(d(u), d(v))).
-        let (u, v) = if self.degree(u) <= self.degree(v) {
-            (u, v)
-        } else {
-            (v, u)
-        };
         self.neighbors(u).binary_search(&v).is_ok()
     }
 
@@ -147,6 +141,55 @@ impl CsrGraph {
     /// ```
     pub fn to_simple_graph(&self) -> SimpleGraph {
         SimpleGraph::from_csr(&self.offsets, &self.targets, self.ne)
+    }
+}
+
+impl CsrGraph {
+    /// Build a CsrGraph directly from edge pairs, bypassing SimpleGraph.
+    ///
+    /// Edges must be canonical (`u < v`), sorted, and unique. This performs
+    /// only 3 heap allocations regardless of graph size.
+    ///
+    /// # Panics
+    /// Panics if edges contain self-loops or out-of-range vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::CsrGraph;
+    ///
+    /// let csr = CsrGraph::from_sorted_unique_edges(3, &[(0, 1), (1, 2)]);
+    /// assert_eq!(csr.nv(), 3);
+    /// assert_eq!(csr.ne(), 2);
+    /// ```
+    pub fn from_sorted_unique_edges(n: usize, edges: &[(u32, u32)]) -> Self {
+        let mut deg = vec![0usize; n];
+        for &(u, v) in edges {
+            deg[u as usize] += 1;
+            deg[v as usize] += 1;
+        }
+        // Build offsets via prefix sum
+        let mut offsets = Vec::with_capacity(n + 1);
+        offsets.push(0usize);
+        for &d in &deg {
+            offsets.push(offsets.last().unwrap() + d);
+        }
+        // Fill flat targets using write cursors
+        let total = offsets[n];
+        let mut targets = vec![0u32; total];
+        let mut cursor = offsets[..n].to_vec();
+        for &(u, v) in edges {
+            targets[cursor[u as usize]] = v;
+            cursor[u as usize] += 1;
+            targets[cursor[v as usize]] = u;
+            cursor[v as usize] += 1;
+        }
+        CsrGraph {
+            nv: n,
+            ne: edges.len(),
+            offsets,
+            targets,
+        }
     }
 }
 
