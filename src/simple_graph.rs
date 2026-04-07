@@ -66,6 +66,16 @@ impl SimpleGraph {
     ///
     /// # Panics
     /// Panics if `n > u32::MAX as usize`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::new(5);
+    /// assert_eq!(g.nv(), 5);
+    /// assert_eq!(g.ne(), 0);
+    /// ```
     pub fn new(n: usize) -> Self {
         assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
         Self {
@@ -78,6 +88,16 @@ impl SimpleGraph {
     ///
     /// Duplicate edges are silently collapsed. Panics on self-loops or
     /// out-of-range vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+    /// assert_eq!(g.ne(), 2);
+    /// assert!(g.has_edge(0, 1));
+    /// ```
     pub fn from_edges(n: usize, edges: &[(u32, u32)]) -> Self {
         assert!(n <= u32::MAX as usize, "vertex count exceeds u32::MAX");
         let mut fadjlist: Vec<Vec<u32>> = vec![vec![]; n];
@@ -112,6 +132,16 @@ impl SimpleGraph {
     }
 
     /// Whether vertex `v` exists in the graph.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::new(3);
+    /// assert!(g.has_vertex(2));
+    /// assert!(!g.has_vertex(3));
+    /// ```
     #[inline]
     pub fn has_vertex(&self, v: u32) -> bool {
         (v as usize) < self.fadjlist.len()
@@ -119,6 +149,17 @@ impl SimpleGraph {
 
     /// Whether edge `(u, v)` exists. Returns `false` if either vertex is out
     /// of range. Checks the shorter neighbor list for O(log min(d(u), d(v))).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(3, &[(0, 1)]);
+    /// assert!(g.has_edge(0, 1));
+    /// assert!(g.has_edge(1, 0)); // undirected
+    /// assert!(!g.has_edge(0, 2));
+    /// ```
     pub fn has_edge(&self, u: u32, v: u32) -> bool {
         if !self.has_vertex(u) || !self.has_vertex(v) {
             return false;
@@ -135,6 +176,17 @@ impl SimpleGraph {
     ///
     /// # Panics
     /// Panics on self-loops or if a vertex is out of range.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let mut g = SimpleGraph::new(3);
+    /// g.add_edge(0, 1);
+    /// assert!(g.has_edge(0, 1));
+    /// assert!(g.has_edge(1, 0)); // undirected
+    /// ```
     pub fn add_edge(&mut self, u: u32, v: u32) {
         assert_ne!(u, v, "self-loops not allowed");
         assert!(
@@ -151,6 +203,17 @@ impl SimpleGraph {
 
     /// Remove an undirected edge. No-op if the edge does not exist or either
     /// vertex is out of range.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let mut g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+    /// g.rem_edge(0, 1);
+    /// assert!(!g.has_edge(0, 1));
+    /// assert_eq!(g.ne(), 1);
+    /// ```
     pub fn rem_edge(&mut self, u: u32, v: u32) {
         if !self.has_vertex(u) || !self.has_vertex(v) {
             return;
@@ -164,18 +227,47 @@ impl SimpleGraph {
     }
 
     /// Degree of vertex `v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(3, &[(0, 1), (0, 2)]);
+    /// assert_eq!(g.degree(0), 2);
+    /// assert_eq!(g.degree(1), 1);
+    /// ```
     #[inline]
     pub fn degree(&self, v: u32) -> usize {
         self.fadjlist[v as usize].len()
     }
 
     /// Sorted neighbor slice of vertex `v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(4, &[(0, 3), (0, 1)]);
+    /// assert_eq!(g.neighbors(0), &[1, 3]); // sorted
+    /// ```
     #[inline]
     pub fn neighbors(&self, v: u32) -> &[u32] {
         &self.fadjlist[v as usize]
     }
 
     /// Iterator over all edges `(u, v)` with `u < v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+    /// let edges: Vec<_> = g.edges().collect();
+    /// assert_eq!(edges, vec![(0, 1), (1, 2)]);
+    /// ```
     pub fn edges(&self) -> crate::iter::Edges<'_, Self> {
         crate::iter::edges(self)
     }
@@ -184,6 +276,17 @@ impl SimpleGraph {
     ///
     /// # Panics
     /// Panics if the graph already has `u32::MAX` vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let mut g = SimpleGraph::new(2);
+    /// let v = g.add_vertex();
+    /// assert_eq!(v, 2);
+    /// assert_eq!(g.nv(), 3);
+    /// ```
     pub fn add_vertex(&mut self) -> u32 {
         assert!(
             self.fadjlist.len() < u32::MAX as usize,
@@ -200,6 +303,17 @@ impl SimpleGraph {
     /// entries are ignored. Returns `(new_graph, vmap)` where
     /// `vmap[new_idx] = old_idx`. Kept vertices appear in ascending order of
     /// their original index.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(4, &[(0, 1), (1, 2), (2, 3)]);
+    /// let (g2, vmap) = g.rem_vertices(&[1]);
+    /// assert_eq!(g2.nv(), 3);
+    /// assert_eq!(vmap, vec![0, 2, 3]);
+    /// ```
     pub fn rem_vertices(&self, to_remove: &[u32]) -> (Self, Vec<u32>) {
         let n = self.nv();
         let mut remove_set = vec![false; n];
@@ -217,6 +331,18 @@ impl SimpleGraph {
     /// entries are ignored. Returns `(subgraph, vmap)` where
     /// `vmap[new_idx] = old_idx`. Kept vertices appear in ascending order of
     /// their original index regardless of input order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::from_edges(5, &[(0, 1), (1, 2), (2, 3), (3, 4)]);
+    /// let (sub, vmap) = g.induced_subgraph(&[1, 2, 3]);
+    /// assert_eq!(sub.nv(), 3);
+    /// assert_eq!(sub.ne(), 2);
+    /// assert_eq!(vmap, vec![1, 2, 3]);
+    /// ```
     pub fn induced_subgraph(&self, vertices: &[u32]) -> (Self, Vec<u32>) {
         let n = self.nv();
         let mut keep = vec![false; n];
@@ -286,6 +412,18 @@ impl SimpleGraph {
 impl SimpleGraph {
     /// Fallible version of `from_edges`. Returns an error string on self-loops
     /// or out-of-range vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::SimpleGraph;
+    ///
+    /// let g = SimpleGraph::try_from_edges(3, &[(0, 1), (1, 2)]).unwrap();
+    /// assert_eq!(g.ne(), 2);
+    ///
+    /// // Self-loops are rejected
+    /// assert!(SimpleGraph::try_from_edges(3, &[(0, 0)]).is_err());
+    /// ```
     pub fn try_from_edges(n: usize, edges: &[(u32, u32)]) -> Result<Self, String> {
         if n > u32::MAX as usize {
             return Err(format!("vertex count {} exceeds u32::MAX", n));

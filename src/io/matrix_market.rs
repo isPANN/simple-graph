@@ -3,6 +3,18 @@ use std::io::{self, BufRead, Write};
 
 /// Write a graph in Matrix Market symmetric coordinate pattern format.
 /// Uses 1-based indexing. Writes the lower triangle (row > col).
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::{SimpleGraph, io};
+///
+/// let g = SimpleGraph::from_edges(3, &[(0, 1)]);
+/// let mut buf = Vec::new();
+/// io::write_matrix_market(&g, &mut buf).unwrap();
+/// let text = String::from_utf8(buf).unwrap();
+/// assert!(text.starts_with("%%MatrixMarket"));
+/// ```
 pub fn write_matrix_market<G: Graph>(graph: &G, mut w: impl Write) -> io::Result<()> {
     writeln!(w, "%%MatrixMarket matrix coordinate pattern symmetric")?;
     let n = graph.nv();
@@ -20,6 +32,17 @@ pub fn write_matrix_market<G: Graph>(graph: &G, mut w: impl Write) -> io::Result
 /// Read a graph from Matrix Market symmetric coordinate pattern format.
 /// Validates banner for "coordinate pattern symmetric". Converts 1-based to 0-based.
 /// Errors on invalid format, count mismatches, self-loops, OOB vertices.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::io;
+///
+/// let input = b"%%MatrixMarket matrix coordinate pattern symmetric\n3 3 1\n1 2\n";
+/// let g = io::read_matrix_market(&input[..]).unwrap();
+/// assert_eq!(g.nv(), 3);
+/// assert!(g.has_edge(0, 1));
+/// ```
 pub fn read_matrix_market(r: impl BufRead) -> io::Result<SimpleGraph> {
     let mut lines = r.lines();
 

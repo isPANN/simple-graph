@@ -9,6 +9,18 @@ pub struct Bfs<'a, G: Graph + ?Sized> {
 }
 
 /// Return a BFS iterator starting from `source`.
+///
+/// If `source` is out of range, the iterator yields no elements.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::{SimpleGraph, algo};
+///
+/// let g = SimpleGraph::from_edges(4, &[(0, 1), (0, 2), (1, 3)]);
+/// let order: Vec<u32> = algo::bfs(&g, 0).collect();
+/// assert_eq!(order, vec![0, 1, 2, 3]);
+/// ```
 pub fn bfs<G: Graph>(graph: &G, source: u32) -> Bfs<'_, G> {
     let n = graph.nv();
     let mut visited = vec![false; n];
@@ -39,6 +51,15 @@ impl<'a, G: Graph + ?Sized> Iterator for Bfs<'a, G> {
 }
 
 /// Whether the graph is connected (empty and single-vertex graphs are connected).
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::{SimpleGraph, algo};
+///
+/// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+/// assert!(algo::is_connected(&g));
+/// ```
 pub fn is_connected<G: Graph>(graph: &G) -> bool {
     let n = graph.nv();
     if n <= 1 {
@@ -52,6 +73,17 @@ pub fn is_connected<G: Graph>(graph: &G) -> bool {
 ///
 /// Uses a single shared visited array and queue to avoid per-component
 /// allocation overhead.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::{SimpleGraph, algo};
+///
+/// let g = SimpleGraph::from_edges(4, &[(0, 1), (2, 3)]);
+/// let labels = algo::connected_components(&g);
+/// assert_eq!(labels[0], labels[1]); // same component
+/// assert_ne!(labels[0], labels[2]); // different components
+/// ```
 pub fn connected_components<G: Graph>(graph: &G) -> Vec<u32> {
     let n = graph.nv();
     let mut labels = vec![u32::MAX; n];

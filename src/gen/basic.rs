@@ -1,6 +1,15 @@
 use crate::SimpleGraph;
 
 /// Complete graph K_n.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::gen;
+///
+/// let g = gen::complete(4);
+/// assert_eq!(g.ne(), 6); // 4 choose 2
+/// ```
 pub fn complete(n: usize) -> SimpleGraph {
     let mut edges = Vec::with_capacity(n * n.saturating_sub(1) / 2);
     for u in 0..n as u32 {
@@ -15,6 +24,16 @@ pub fn complete(n: usize) -> SimpleGraph {
 ///
 /// # Panics
 /// Panics if `n < 3`.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::gen;
+///
+/// let g = gen::cycle(5);
+/// assert_eq!(g.ne(), 5);
+/// assert!(g.has_edge(0, 4)); // wraps around
+/// ```
 pub fn cycle(n: usize) -> SimpleGraph {
     assert!(n >= 3, "cycle requires at least 3 vertices");
     let mut edges = Vec::with_capacity(n);
@@ -25,6 +44,15 @@ pub fn cycle(n: usize) -> SimpleGraph {
 }
 
 /// Path graph P_n (n vertices, n-1 edges).
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::gen;
+///
+/// let g = gen::path(4);
+/// assert_eq!(g.ne(), 3);
+/// ```
 pub fn path(n: usize) -> SimpleGraph {
     if n <= 1 {
         return SimpleGraph::new(n);
@@ -35,6 +63,15 @@ pub fn path(n: usize) -> SimpleGraph {
 
 /// 2D grid graph with `rows` x `cols` vertices.
 /// Vertex index for position (r, c) is `r * cols + c`.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::gen;
+///
+/// let g = gen::grid_2d(3, 4);
+/// assert_eq!(g.nv(), 12);
+/// ```
 pub fn grid_2d(rows: usize, cols: usize) -> SimpleGraph {
     let n = rows * cols;
     if n == 0 {

@@ -1,0 +1,26 @@
+[package]
+name = "simple-graph-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.simple-graph]
+path = ".."
+
+[[bin]]
+name = "fuzz_edge_list"
+path = "fuzz_targets/fuzz_edge_list.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_matrix_market"
+path = "fuzz_targets/fuzz_matrix_market.rs"
+doc = false
+
+[workspace]

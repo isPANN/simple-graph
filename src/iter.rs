@@ -10,6 +10,16 @@ pub struct Edges<'a, G: Graph + ?Sized> {
 }
 
 /// Create an iterator over all edges `(u, v)` with `u < v` for any [`Graph`].
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::{SimpleGraph, edges};
+///
+/// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+/// let e: Vec<_> = edges(&g).collect();
+/// assert_eq!(e, vec![(0, 1), (1, 2)]);
+/// ```
 pub fn edges<G: Graph>(graph: &G) -> Edges<'_, G> {
     let mut iter = Edges {
         graph,

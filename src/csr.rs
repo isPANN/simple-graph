@@ -15,6 +15,16 @@ pub struct CsrGraph {
 
 impl CsrGraph {
     /// Number of vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let sg = SimpleGraph::from_edges(3, &[(0, 1)]);
+    /// let csr = CsrGraph::from(&sg);
+    /// assert_eq!(csr.nv(), 3);
+    /// ```
     #[inline]
     pub fn nv(&self) -> usize {
         if self.offsets.is_empty() {
@@ -25,18 +35,48 @@ impl CsrGraph {
     }
 
     /// Number of edges.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let sg = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+    /// let csr = CsrGraph::from(&sg);
+    /// assert_eq!(csr.ne(), 2);
+    /// ```
     #[inline]
     pub fn ne(&self) -> usize {
         self.ne
     }
 
     /// Whether vertex `v` exists.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let csr = CsrGraph::from(&SimpleGraph::new(3));
+    /// assert!(csr.has_vertex(2));
+    /// assert!(!csr.has_vertex(3));
+    /// ```
     #[inline]
     pub fn has_vertex(&self, v: u32) -> bool {
         (v as usize) < self.nv()
     }
 
     /// Whether edge `(u, v)` exists. Returns `false` for out-of-range vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 1)]));
+    /// assert!(csr.has_edge(0, 1));
+    /// assert!(!csr.has_edge(0, 2));
+    /// ```
     pub fn has_edge(&self, u: u32, v: u32) -> bool {
         if !self.has_vertex(u) || !self.has_vertex(v) {
             return false;
@@ -45,6 +85,15 @@ impl CsrGraph {
     }
 
     /// Degree of vertex `v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 1), (0, 2)]));
+    /// assert_eq!(csr.degree(0), 2);
+    /// ```
     #[inline]
     pub fn degree(&self, v: u32) -> usize {
         let vi = v as usize;
@@ -52,6 +101,15 @@ impl CsrGraph {
     }
 
     /// Sorted neighbor slice of vertex `v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 2), (0, 1)]));
+    /// assert_eq!(csr.neighbors(0), &[1, 2]);
+    /// ```
     #[inline]
     pub fn neighbors(&self, v: u32) -> &[u32] {
         let vi = v as usize;
@@ -59,11 +117,31 @@ impl CsrGraph {
     }
 
     /// Iterator over all edges `(u, v)` with `u < v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let csr = CsrGraph::from(&SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]));
+    /// let edges: Vec<_> = csr.edges().collect();
+    /// assert_eq!(edges, vec![(0, 1), (1, 2)]);
+    /// ```
     pub fn edges(&self) -> crate::iter::Edges<'_, Self> {
         crate::iter::edges(self)
     }
 
     /// Convert back to a mutable [`SimpleGraph`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_graph::{SimpleGraph, CsrGraph};
+    ///
+    /// let sg = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+    /// let csr = CsrGraph::from(&sg);
+    /// assert_eq!(csr.to_simple_graph(), sg);
+    /// ```
     pub fn to_simple_graph(&self) -> SimpleGraph {
         SimpleGraph::from_csr(&self.offsets, &self.targets, self.ne)
     }

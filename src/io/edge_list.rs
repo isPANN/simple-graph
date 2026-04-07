@@ -3,6 +3,18 @@ use std::io::{self, BufRead, Write};
 
 /// Write a graph in edge-list format.
 /// Format: first line is `nv ne`, followed by one `u v` line per edge (u < v).
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::{SimpleGraph, io};
+///
+/// let g = SimpleGraph::from_edges(3, &[(0, 1), (1, 2)]);
+/// let mut buf = Vec::new();
+/// io::write_edge_list(&g, &mut buf).unwrap();
+/// let text = String::from_utf8(buf).unwrap();
+/// assert!(text.starts_with("3 2"));
+/// ```
 pub fn write_edge_list<G: Graph>(graph: &G, mut w: impl Write) -> io::Result<()> {
     writeln!(w, "{} {}", graph.nv(), graph.ne())?;
     for v in 0..graph.nv() as u32 {
@@ -19,6 +31,17 @@ pub fn write_edge_list<G: Graph>(graph: &G, mut w: impl Write) -> io::Result<()>
 /// Lines starting with `#` or `%` are skipped. First non-comment line must be
 /// `nv ne`. Remaining lines are `u v` edges. Returns error if declared edge
 /// count doesn't match, or if edges contain self-loops/out-of-range vertices.
+///
+/// # Examples
+///
+/// ```
+/// use simple_graph::io;
+///
+/// let input = b"3 2\n0 1\n1 2\n";
+/// let g = io::read_edge_list(&input[..]).unwrap();
+/// assert_eq!(g.nv(), 3);
+/// assert_eq!(g.ne(), 2);
+/// ```
 pub fn read_edge_list(r: impl BufRead) -> io::Result<SimpleGraph> {
     let mut lines = r.lines();
     let (nv, ne_declared) = loop {
