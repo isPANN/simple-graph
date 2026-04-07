@@ -1,15 +1,57 @@
+use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
 
-use crate::Edges;
+use crate::{Edges, Graph};
 
 /// An undirected simple graph with sorted adjacency lists.
 ///
 /// Vertices are contiguous integers `0..nv()`. Each vertex stores a sorted
 /// `Vec<u32>` of its neighbors. This mirrors Julia's `Graphs.jl` `SimpleGraph`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SimpleGraph {
     ne: usize,
     fadjlist: Vec<Vec<u32>>,
+}
+
+/// Raw helper for deserialization — validated before becoming a `SimpleGraph`.
+#[derive(Deserialize)]
+struct SimpleGraphRaw {
+    ne: usize,
+    fadjlist: Vec<Vec<u32>>,
+}
+
+impl<'de> Deserialize<'de> for SimpleGraph {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let raw = SimpleGraphRaw::deserialize(deserializer)?;
+        let n = raw.fadjlist.len();
+        let mut edge_count = 0usize;
+        for (u, nbrs) in raw.fadjlist.iter().enumerate() {
+            // Check sorted, no duplicates, no self-loops, in range
+            for (i, &v) in nbrs.iter().enumerate() {
+                if v as usize >= n {
+                    return Err(de::Error::custom("neighbor out of range"));
+                }
+                if v as usize == u {
+                    return Err(de::Error::custom("self-loop detected"));
+                }
+                if i > 0 && nbrs[i - 1] >= v {
+                    return Err(de::Error::custom("adjacency list not sorted or has duplicates"));
+                }
+                // Check symmetry: u must appear in v's list
+                if raw.fadjlist[v as usize].binary_search(&(u as u32)).is_err() {
+                    return Err(de::Error::custom("asymmetric edge"));
+                }
+            }
+            edge_count += nbrs.len();
+        }
+        if edge_count / 2 != raw.ne {
+            return Err(de::Error::custom("incorrect edge count"));
+        }
+        Ok(SimpleGraph {
+            ne: raw.ne,
+            fadjlist: raw.fadjlist,
+        })
+    }
 }
 
 impl SimpleGraph {
@@ -22,12 +64,30 @@ impl SimpleGraph {
     }
 
     /// Create a graph from a list of edges.
+    ///
+    /// Duplicate edges are silently collapsed. Panics on self-loops or
+    /// out-of-range vertices.
     pub fn from_edges(n: usize, edges: &[(u32, u32)]) -> Self {
-        let mut g = Self::new(n);
+        let mut fadjlist: Vec<Vec<u32>> = vec![vec![]; n];
         for &(u, v) in edges {
-            g.add_edge(u, v);
+            assert_ne!(u, v, "self-loops not allowed");
+            assert!(
+                (u as usize) < n && (v as usize) < n,
+                "vertex out of range"
+            );
+            fadjlist[u as usize].push(v);
+            fadjlist[v as usize].push(u);
         }
-        g
+        let mut ne = 0;
+        for list in &mut fadjlist {
+            list.sort_unstable();
+            list.dedup();
+            ne += list.len();
+        }
+        Self {
+            ne: ne / 2,
+            fadjlist,
+        }
     }
 
     /// Number of vertices.
@@ -48,10 +108,13 @@ impl SimpleGraph {
         (v as usize) < self.fadjlist.len()
     }
 
-    /// Whether edge `(u, v)` exists. Checks the shorter neighbor list for
-    /// O(log min(d(u), d(v))).
+    /// Whether edge `(u, v)` exists. Returns `false` if either vertex is out
+    /// of range. Checks the shorter neighbor list for O(log min(d(u), d(v))).
     pub fn has_edge(&self, u: u32, v: u32) -> bool {
-        let (u, v) = if self.degree(u) <= self.degree(v) {
+        if !self.has_vertex(u) || !self.has_vertex(v) {
+            return false;
+        }
+        let (u, v) = if self.fadjlist[u as usize].len() <= self.fadjlist[v as usize].len() {
             (u, v)
         } else {
             (v, u)
@@ -77,8 +140,12 @@ impl SimpleGraph {
         }
     }
 
-    /// Remove an undirected edge. No-op if the edge does not exist.
+    /// Remove an undirected edge. No-op if the edge does not exist or either
+    /// vertex is out of range.
     pub fn rem_edge(&mut self, u: u32, v: u32) {
+        if !self.has_vertex(u) || !self.has_vertex(v) {
+            return;
+        }
         if let Ok(pos) = self.fadjlist[u as usize].binary_search(&v) {
             self.fadjlist[u as usize].remove(pos);
             let pos2 = self.fadjlist[v as usize].binary_search(&u).unwrap();
@@ -105,7 +172,14 @@ impl SimpleGraph {
     }
 
     /// Add a new isolated vertex and return its index.
+    ///
+    /// # Panics
+    /// Panics if the graph already has `u32::MAX` vertices.
     pub fn add_vertex(&mut self) -> u32 {
+        assert!(
+            self.fadjlist.len() < u32::MAX as usize,
+            "vertex count would exceed u32::MAX"
+        );
         let v = self.fadjlist.len() as u32;
         self.fadjlist.push(vec![]);
         v
@@ -113,18 +187,46 @@ impl SimpleGraph {
 
     /// Remove vertices and compact indices.
     ///
-    /// Returns `(new_graph, vmap)` where `vmap[new_idx] = old_idx`.
+    /// Duplicate entries in `to_remove` are silently collapsed. Out-of-range
+    /// entries are ignored. Returns `(new_graph, vmap)` where
+    /// `vmap[new_idx] = old_idx`. Kept vertices appear in ascending order of
+    /// their original index.
     pub fn rem_vertices(&self, to_remove: &[u32]) -> (Self, Vec<u32>) {
         let n = self.nv();
-        let mut old_to_new = vec![u32::MAX; n];
         let mut remove_set = vec![false; n];
         for &v in to_remove {
-            remove_set[v as usize] = true;
+            if (v as usize) < n {
+                remove_set[v as usize] = true;
+            }
         }
-        let mut vmap: Vec<u32> = Vec::with_capacity(n - to_remove.len());
+        self.build_subgraph(|v| !remove_set[v])
+    }
+
+    /// Return the subgraph induced by the given vertex set.
+    ///
+    /// Duplicate entries in `vertices` are silently collapsed. Out-of-range
+    /// entries are ignored. Returns `(subgraph, vmap)` where
+    /// `vmap[new_idx] = old_idx`. Kept vertices appear in ascending order of
+    /// their original index regardless of input order.
+    pub fn induced_subgraph(&self, vertices: &[u32]) -> (Self, Vec<u32>) {
+        let n = self.nv();
+        let mut keep = vec![false; n];
+        for &v in vertices {
+            if (v as usize) < n {
+                keep[v as usize] = true;
+            }
+        }
+        self.build_subgraph(|v| keep[v])
+    }
+
+    /// Shared helper: build a compacted subgraph from a vertex predicate.
+    fn build_subgraph(&self, keep: impl Fn(usize) -> bool) -> (Self, Vec<u32>) {
+        let n = self.nv();
+        let mut old_to_new = vec![u32::MAX; n];
+        let mut vmap: Vec<u32> = Vec::new();
         let mut new_idx = 0u32;
         for old in 0..n {
-            if !remove_set[old] {
+            if keep(old) {
                 old_to_new[old] = new_idx;
                 vmap.push(old as u32);
                 new_idx += 1;
@@ -137,36 +239,33 @@ impl SimpleGraph {
                 .iter()
                 .filter_map(|&nbr| {
                     let new = old_to_new[nbr as usize];
-                    if new != u32::MAX {
-                        Some(new)
-                    } else {
-                        None
-                    }
+                    if new != u32::MAX { Some(new) } else { None }
                 })
                 .collect();
             ne += new_nbrs.len();
             fadjlist.push(new_nbrs);
         }
-        (
-            SimpleGraph {
-                ne: ne / 2,
-                fadjlist,
-            },
-            vmap,
-        )
+        (SimpleGraph { ne: ne / 2, fadjlist }, vmap)
     }
+}
 
-    /// Return the subgraph induced by the given vertex set.
-    ///
-    /// Returns `(subgraph, vmap)` where `vmap[new_idx] = old_idx`.
-    pub fn induced_subgraph(&self, vertices: &[u32]) -> (Self, Vec<u32>) {
-        let n = self.nv();
-        let mut keep = vec![false; n];
-        for &v in vertices {
-            keep[v as usize] = true;
-        }
-        let to_remove: Vec<u32> = (0..n as u32).filter(|&v| !keep[v as usize]).collect();
-        self.rem_vertices(&to_remove)
+impl Graph for SimpleGraph {
+    #[inline]
+    fn nv(&self) -> usize { SimpleGraph::nv(self) }
+    #[inline]
+    fn ne(&self) -> usize { SimpleGraph::ne(self) }
+    #[inline]
+    fn has_vertex(&self, v: u32) -> bool { SimpleGraph::has_vertex(self, v) }
+    fn has_edge(&self, u: u32, v: u32) -> bool { SimpleGraph::has_edge(self, u, v) }
+    #[inline]
+    fn degree(&self, v: u32) -> usize { SimpleGraph::degree(self, v) }
+    #[inline]
+    fn neighbors(&self, v: u32) -> &[u32] { SimpleGraph::neighbors(self, v) }
+}
+
+impl Default for SimpleGraph {
+    fn default() -> Self {
+        Self::new(0)
     }
 }
 
