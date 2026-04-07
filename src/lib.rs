@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub mod algo;
 mod csr;
 pub mod gen;
