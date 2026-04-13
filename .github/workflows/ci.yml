@@ -68,7 +68,7 @@ jobs:
         with:
           path: target/doc
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   bench:
     runs-on: ubuntu-latest
