@@ -80,7 +80,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo bench --bench benchmarks 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee bench-output.txt
       - name: Comment benchmark results on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
